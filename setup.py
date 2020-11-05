@@ -1,11 +1,11 @@
 from distutils.core import setup
 
 setup(
-    name='os_tools',  # How you named your package folder (MyLib)
-    packages=['os_tools'],  # Choose the same as "name"
-    version='4.48',  # Start with a small number and increase it with every change you make
+    name='os_file_handler',  # How you named your package folder (MyLib)
+    packages=['os_file_handler'],  # Choose the same as "name"
+    version='1.02',  # Start with a small number and increase it with every change you make
     license='MIT',  # Chose a license from here: https://help.github.com/articles/licensing-a-repository
-    description='py tools for os',  # Give a short description about your library
+    description='py file handling tools for os',  # Give a short description about your library
     author='Oz Shabat',  # Type in your name
     author_email='support@os-apps.com',  # Type in your E-Mail
     url='https://github.com/osfunapps/os-file-handler-py',  # Provide either the link to your github or to your website

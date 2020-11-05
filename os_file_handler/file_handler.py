@@ -139,30 +139,60 @@ def copy_list_of_files(files_list, dst):
 def rename(src, dst):
     os.rename(src, dst)
 
-
 # will search for a file in a path by prefix, suffix, full name with/without an extension
-def search_files(path_to_search, full_name=None, prefix=None, suffix=None, by_extension=None):
+def search_file(path_to_search, full_name=None, prefix=None, suffix=None, by_extension=None, recursive=True):
     from pathlib import Path
     files = []
-    search_queue = '**/'
+    search_queue = ''
+    if recursive:
+        search_queue = '**/'
     if full_name:
         search_queue += full_name
         if by_extension:
             search_queue += by_extension
     else:
         if prefix:
-            search_queue += f'{prefix}*'
-            if by_extension:
-                search_queue += by_extension
-        elif suffix:
-            search_queue += f'*{suffix}'
-            if by_extension:
-                search_queue += by_extension
+            search_queue += f'{prefix}'
+            if suffix:
+                search_queue += f'*{suffix}'
+            else:
+                if not by_extension:
+                    search_queue += '*'
         else:
+            if suffix:
+                search_queue += f'*{suffix}'
+        if by_extension:
             search_queue += f'*{by_extension}'
+        else:
+            search_queue += f'.*'
 
     for filename in Path(path_to_search).glob(search_queue):
         files.append(str(filename))
+    return files
+
+
+# will search for a directory in a path by full name or prefix or/and suffix
+def search_dir(path_to_search, full_name=None, prefix=None, suffix=None, recursive=True):
+    from pathlib import Path
+    files = []
+    search_queue = ''
+    if recursive:
+        search_queue = '**/'
+
+    if full_name:
+        search_queue += full_name
+    elif prefix:
+        search_queue += f'{prefix}'
+        if suffix:
+            search_queue += f'*{suffix}'
+        else:
+            search_queue += '*'
+    elif suffix:
+        search_queue += f'*{suffix}'
+
+    for filename in Path(path_to_search).glob(search_queue):
+        if is_dir_exists(filename):
+            files.append(str(filename))
     return files
 
 
