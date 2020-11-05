@@ -94,22 +94,34 @@ def remove_files(file_list):
 
 
 # will copy a directory
-def copy_dir(src, dst, ignore_patterns_str='.DS_Store'):
+def copy_dir(src, dst, ignore_patterns_str='.DS_Store', overwrite_content_if_exists=False):
     from shutil import copytree, ignore_patterns
+    if is_dir_exists(dst):
+        for idx_dir in get_dir_content(src, recursive=True, collect_dirs=True, collect_files=False):
+            dst_dir_name = get_dir_name(idx_dir)
+            dir_dst = os.path.join(dst, dst_dir_name)
+            copy_dir(idx_dir, dir_dst, overwrite_content_if_exists=overwrite_content_if_exists)
 
-    copytree(src, dst, ignore=ignore_patterns(ignore_patterns_str))
+        for idx_file in get_dir_content(src, recursive=True, collect_dirs=False, collect_files=True):
+            f_name = get_file_name_from_path(idx_file)
+            file_dst = os.path.join(dst, f_name)
+            copy_file(idx_file, file_dst, create_path_if_needed=True, overwrite_if_needed=overwrite_content_if_exists)
+    else:
+        copytree(src, dst, ignore=ignore_patterns(ignore_patterns_str))
 
 
 '''
-Will copy a file to a dest
+Will copy a file to a dest.
 
-param force: set to true if the parent directory could not exists and you want to create it 
+param create_path_if_needed: set to true if the parent directory could not exists and you want to create it 
+overwrite_if_needed: set to true to overwrite the file 
 '''
 
 
-def copy_file(src, dst, force=True):
-    if not is_dir_exists(get_parent_path(dst)) and force:
+def copy_file(src, dst, create_path_if_needed=True, overwrite_if_needed=False):
+    if not is_dir_exists(get_parent_path(dst)) and create_path_if_needed:
         create_dir(get_parent_path(dst))
+
     shutil.copy(src, dst)
 
 
@@ -132,7 +144,7 @@ def get_parent_path(file):
 # will copy a list of files to a dir
 def copy_list_of_files(files_list, dst):
     for file in files_list:
-        copy_file(file, dst)
+        copy_file(file, dst, create_path_if_needed=True)
 
 
 # will rename a file or a directory
