@@ -65,6 +65,13 @@ def create_file(path, content: list = None):
             f.writelines(content)
 
 
+# will create a file from bytes
+def bytes_to_file(output_path, data: bytes):
+    out_file = open(output_path, "wb")
+    out_file.write(data)
+    out_file.close()
+
+
 # will return the extension of a file from a file path
 def get_extension_from_file(file):
     _, file_extension = os.path.splitext(file)
@@ -93,32 +100,12 @@ def remove_files(file_list):
         remove_file(file)
 
 
-# will copy a directory
-def copy_dir(src, dst, ignore_patterns_str='.DS_Store', overwrite_content_if_exists=False):
-    from shutil import copytree, ignore_patterns
-    if is_dir_exists(dst):
-        for idx_dir in get_dir_content(src, recursive=True, collect_dirs=True, collect_files=False):
-            dst_dir_name = get_dir_name(idx_dir)
-            dir_dst = os.path.join(dst, dst_dir_name)
-            copy_dir(idx_dir, dir_dst, overwrite_content_if_exists=overwrite_content_if_exists)
+def copy_file(src, dst, create_path_if_needed=True):
+    """
+    Will copy a file to a dest.
 
-        for idx_file in get_dir_content(src, recursive=True, collect_dirs=False, collect_files=True):
-            f_name = get_file_name_from_path(idx_file)
-            file_dst = os.path.join(dst, f_name)
-            copy_file(idx_file, file_dst, create_path_if_needed=True, overwrite_if_needed=overwrite_content_if_exists)
-    else:
-        copytree(src, dst, ignore=ignore_patterns(ignore_patterns_str))
-
-
-'''
-Will copy a file to a dest.
-
-param create_path_if_needed: set to true if the parent directory could not exists and you want to create it 
-overwrite_if_needed: set to true to overwrite the file 
-'''
-
-
-def copy_file(src, dst, create_path_if_needed=True, overwrite_if_needed=False):
+    param create_path_if_needed: set to true if the parent directory could not exists and you want to create it
+    """
     if not is_dir_exists(get_parent_path(dst)) and create_path_if_needed:
         create_dir(get_parent_path(dst))
 
@@ -150,6 +137,7 @@ def copy_list_of_files(files_list, dst):
 # will rename a file or a directory
 def rename(src, dst):
     os.rename(src, dst)
+
 
 # will search for a file in a path by prefix, suffix, full name with/without an extension
 def search_file(path_to_search, full_name=None, prefix=None, suffix=None, by_extension=None, recursive=True):
@@ -256,10 +244,21 @@ def is_dir_empty(dir_path):
     return len(os.listdir(dir_path)) == 0
 
 
-# will copy the content of a directory to another directory
-def copy_dir_content(dir_src, dir_dest):
-    from distutils.dir_util import copy_tree
-    copy_tree(dir_src, dir_dest)
+# will copy a directory
+def copy_dir(src, dst, ignore_patterns_str='.DS_Store', overwrite_content_if_exists=False):
+    from shutil import copytree, ignore_patterns
+    if is_dir_exists(dst):
+        for idx_dir in get_dir_content(src, recursive=True, collect_dirs=True, collect_files=False):
+            dst_dir_paths = idx_dir.replace(f'{src}/', '')
+            dir_dst = os.path.join(dst, dst_dir_paths)
+            copy_dir(idx_dir, dir_dst, overwrite_content_if_exists=overwrite_content_if_exists)
+
+        for idx_file in get_dir_content(src, recursive=True, collect_dirs=False, collect_files=True):
+            f_path = dst_dir_paths = idx_file.replace(f'{src}/', '')
+            file_dst = os.path.join(dst, f_path)
+            copy_file(idx_file, file_dst, create_path_if_needed=True)
+    else:
+        copytree(src, dst, ignore=ignore_patterns(ignore_patterns_str))
 
 
 # will clear the content of a directory
@@ -285,7 +284,8 @@ def remove_all_files_with_extension(path, ext):
 
 # will remove a single file
 def remove_file(file):
-    os.remove(file)
+    if is_file_exists(file):
+        os.remove(file)
 
 
 # will check if line exists in a file
@@ -359,3 +359,26 @@ def remove_lines_from_file(file_path, lines_arr_to_remove=None, remove_from=None
             continue
 
         sys.stdout.write(line)
+
+
+def file_to_bytes(path, n=None):
+    """
+    Will read a file to bytes
+    Args:
+      param path: the path to your file
+      param n: the bytes count to read (leave None to read the whole file)
+    """
+    in_file = open(path, "rb")
+    data = in_file.read(n)
+    in_file.close()
+    return data
+
+
+# will extract a zip file to a destination
+def extract_zip_file(zip_file_path, dst_path):
+    from zipfile import ZipFile
+    # Create a ZipFile Object and load sample.zip in it
+
+    with ZipFile(zip_file_path, 'r') as zipObj:
+        # Extract all the contents of zip file in current directory
+        zipObj.extractall(dst_path)
